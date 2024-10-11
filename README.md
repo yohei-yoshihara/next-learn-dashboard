@@ -1,6 +1,6 @@
 ## Next.js App Router Course with SQLite3
 
-以下のコースのサンプルアプリを SQLite3 で動作するように修正した。
+以下のコースのサンプルアプリを SQLite3 で動作するように修正したもの。
 
 - [course curriculum](https://nextjs.org/learn)
 
