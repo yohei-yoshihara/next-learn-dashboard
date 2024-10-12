@@ -5,7 +5,7 @@
 - [course curriculum](https://nextjs.org/learn)
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npx auth secret
 npm run dev
 ```

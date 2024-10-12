@@ -1,7 +1,7 @@
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 // import { db } from '@vercel/postgres';
-import { invoices, customers, revenue, users } from '../lib/placeholder-data';
-import { db } from '@/app/lib/db';
+import { invoices, customers, revenue, users } from "../lib/placeholder-data";
+import { db } from "@/app/lib/db";
 
 // const client = await db.connect();
 
@@ -15,12 +15,11 @@ async function seedUsers() {
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL
     );
-  `,
+  `
     )
     .run();
-  console.log('result = ', result);
 
-  db.prepare('DELETE FROM users;').run();
+  db.prepare("DELETE FROM users;").run();
 
   const insertedUsers = await users.map(async (user) => {
     const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -28,11 +27,11 @@ async function seedUsers() {
       `
         INSERT INTO users (name, email, password)
         VALUES ($name, $email, $password);
-      `,
+      `
     ).run({ name: user.name, email: user.email, password: hashedPassword });
     return db
       .prepare<[], { name: string; email: string; password: string }>(
-        `SELECT name, email, password FROM users WHERE rowid = last_insert_rowid()`,
+        `SELECT name, email, password FROM users WHERE rowid = last_insert_rowid()`
       )
       .get();
   });
@@ -49,10 +48,10 @@ async function seedCustomers() {
       email TEXT NOT NULL,
       image_url TEXT NOT NULL
     );
-  `,
+  `
   ).run();
 
-  db.prepare('DELETE FROM customers;').run();
+  db.prepare("DELETE FROM customers;").run();
 
   const insertedCustomers = customers.map((customer) =>
     db
@@ -60,13 +59,13 @@ async function seedCustomers() {
         `
         INSERT INTO customers (name, email, image_url)
         VALUES ($name, $email, $image_url);
-      `,
+      `
       )
       .run({
         name: customer.name,
         email: customer.email,
         image_url: customer.image_url,
-      }),
+      })
   );
 
   return insertedCustomers;
@@ -82,10 +81,10 @@ async function seedInvoices() {
       status TEXT NOT NULL,
       date TEXT NOT NULL
     );
-  `,
+  `
   ).run();
 
-  db.prepare('DELETE FROM invoices;').run();
+  db.prepare("DELETE FROM invoices;").run();
 
   const insertedInvoices = invoices.map((invoice) => {
     db.prepare<
@@ -95,7 +94,7 @@ async function seedInvoices() {
       `
         INSERT INTO invoices (customer_id, amount, status, date)
         VALUES ((SELECT id FROM customers WHERE email = $customer_email), $amount, $status, $date);
-      `,
+      `
     ).run({
       customer_email: invoice.customer_email,
       amount: invoice.amount,
@@ -107,7 +106,7 @@ async function seedInvoices() {
         [],
         { customer_id: number; amount: number; status: string; date: string }
       >(
-        `select customer_id, amount, status, date from invoices where rowid = last_insert_rowid()`,
+        `select customer_id, amount, status, date from invoices where rowid = last_insert_rowid()`
       )
       .get();
   });
@@ -122,21 +121,21 @@ async function seedRevenue() {
       month TEXT NOT NULL UNIQUE,
       revenue INTEGER NOT NULL
     );
-  `,
+  `
   ).run();
 
-  db.prepare('DELETE FROM revenue;').run();
+  db.prepare("DELETE FROM revenue;").run();
 
   const insertedRevenue = revenue.map((rev) => {
     db.prepare(
       `
         INSERT INTO revenue (month, revenue)
         VALUES ($month, $revenue);
-      `,
+      `
     ).run({ month: rev.month, revenue: rev.revenue });
     return db
       .prepare<[], { month: string; revenue: number }>(
-        `SELECT month, revenue FROM revenue WHERE rowid = last_insert_rowid()`,
+        `SELECT month, revenue FROM revenue WHERE rowid = last_insert_rowid()`
       )
       .get();
   });
@@ -151,13 +150,12 @@ export async function GET() {
   // });
   try {
     // db.transaction(async () => {
-    const users = await seedUsers();
-    console.log('users = ', users);
+    await seedUsers();
     await seedCustomers();
     await seedInvoices();
     await seedRevenue();
     // });
-    return Response.json({ message: 'Database seeded successfully' });
+    return Response.json({ message: "Database seeded successfully" });
   } catch (error) {
     console.error(error);
     return Response.json({ error }, { status: 500 });
